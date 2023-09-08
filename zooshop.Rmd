@@ -1,0 +1,308 @@
+![](images/zooshop_innodb_img_2.png)
+
+client_role 1:2
+
+order_status 1:5
+
+pet_category 1:13
+
+product_category 1:11
+
+country_manufacturer 1:7
+
+```{r}
+client_role_range <- c(1:2)
+order_status_range <- c(1:5)
+pet_category_range <- c(1:13)
+product_category_range <- c(1:11)
+country_manufacturer_range <- c(1:7)
+```
+
+## Manufacturer
+
+```{r}
+id_manufacturer <- c(1:10000)
+```
+
+```{r}
+manuf_name <- paste0("Виробник №", id_manufacturer)
+```
+
+```{r}
+set.seed(123)
+# create some types of description and put it in random order
+manuf_descr <- c("Товари даного виробника вирізняються якістю та стабільністю вже протягом десятків років.",
+              "Даний виробник зарекомендував себе як надійний виробник товарів для наших улюбленців.",
+             "Виробник, який ставить для себе німецьку якість як пріоритет.",
+             "Виробник товарів люкс-класу.",
+             "Відомий виробник зоотоварів широкого використання."
+             )
+manuf_description <- sample(manuf_descr, size = 10000, replace = TRUE)
+```
+
+```{r}
+start_date <- as.Date("2017-01-01")
+end_date <- as.Date("2023-09-08")
+
+set.seed(123)
+date_added <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             10000,
+                             replace = TRUE))
+```
+
+```{r}
+set.seed(123)
+manuf_float <- abs(round(rnorm(10000), 2))
+```
+
+```{r}
+set.seed(123)
+manuf_int <- sample(c(1:1000),
+                    size = 10000,
+                    replace = T)
+```
+
+```{r}
+set.seed(123)
+fk_country <- sample(country_manufacturer_range,
+                     size = 10000,
+                     replace = T)
+```
+
+```{r}
+manufacturer <- data.frame(id_manufacturer = id_manufacturer,
+                           manuf_name = manuf_name,
+                           manuf_description = manuf_description,
+                           date_added = date_added,
+                           manuf_float = manuf_float,
+                           manuf_int = manuf_int,
+                           fk_country = fk_country)
+head(manufacturer)
+```
+
+```{r}
+write.csv(manufacturer, 
+          "./zooshop_out/manufacturer.csv",
+          row.names = FALSE)
+```
+
+```{r}
+create_manufacturer <- function(df){
+        query <- paste0(
+"INSERT INTO `zooshop_innodb`.`manufacturer` (`id_manufacturer`, `manuf_name`, `manuf_description`, `date_added`, `manuf_float`, `manuf_int`, `fk_country`) VALUES ( ",id_manufacturer,", '", manuf_name,"', '", manuf_description,"', '", date_added,"', ", manuf_float,", ", manuf_int,", ", fk_country," );")
+        return(query)
+}
+```
+
+```{r}
+# write to sql file
+file_connection <- file("./zooshop_out/fill_manufacturer.sql")
+writeLines(create_manufacturer(manufacturer),
+           file_connection)
+close(file_connection)
+
+```
+
+## Supplier
+
+```{r}
+id_supplier <- c(1:10000)
+```
+
+```{r}
+supplier_name <- paste0("Постачальник №", id_supplier)
+```
+
+```{r}
+set.seed(123)
+# create some types of description and put it in random order
+supp_descr <- c("Поставки товарів даного постачальника вирізняються якістю та стабільністю вже протягом десятків років.",
+              "Даний постачальник зарекомендував себе як надійний постачальник товарів для наших улюбленців.",
+             "Постачальник, який ставить для себе якість поставлених товарів як пріоритет.",
+             "Постачальник товарів люкс-класу.",
+             "Відомий постачальник зоотоварів широкого використання."
+             )
+supplier_description <- sample(supp_descr, 
+                               size = 10000, 
+                               replace = TRUE)
+```
+
+```{r}
+start_date <- as.Date("2010-01-01")
+end_date <- as.Date("2023-09-08")
+
+set.seed(123)
+date_signed_contract <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             10000,
+                             replace = TRUE))
+```
+
+```{r}
+set.seed(123)
+supplier_int <- sample(c(1:2000),
+                    size = 10000,
+                    replace = T)
+
+```
+
+```{r}
+set.seed(123)
+supplier_float <- abs(round(rnorm(10000), 2))
+```
+
+```{r}
+supplier <- data.frame(id_supplier = id_supplier,
+                           supplier_name = supplier_name,
+                           supplier_description = supplier_description,
+                           date_signed_contract = date_signed_contract,
+                           supplier_int = supplier_int,
+                           supplier_float = supplier_float)
+head(supplier)
+```
+
+```{r}
+write.csv(supplier, 
+          "./zooshop_out/supplier.csv",
+          row.names = FALSE)
+```
+
+```{r}
+create_supplier <- function(df){
+        query <- paste0("INSERT INTO `zooshop_innodb`.`supplier` (`id_supplier`, `supplier_name`, `supplier_description`, `date_signed_contract`, `supplier_int`, `supplier_float`) VALUES (" ,id_supplier,", '", supplier_name,"', '", supplier_description,"', '", date_signed_contract,"', ", supplier_int,", ", supplier_float," );")
+        return(query)
+}
+```
+
+```{r}
+# write to sql file
+file_connection <- file("./zooshop_out/fill_supplier.sql")
+writeLines(create_supplier(supplier),
+           file_connection)
+close(file_connection)
+
+```
+
+## Client
+
+```{r}
+id_client <- c(1:10000)
+```
+
+```{r}
+set.seed(1)
+cl_names <- c("Маргарита", "Василь", "Петро", "Володимир", "Владислав", "Андрій", "Олена", "Олександра", "Олександр", "Юлія", "Валентина", "Антон", "Анна", "Федор", "Марія", "Валерія", "Іван", "Іванна", "Юрій", "Даниїл", "Вікторія", "Станіслав", "Оксана", "Михайло", "Валентин", "Євген", "Євгенія", "Мирослав", "Мирослава", "Наталія", "Ілона", "Тетяна", "Микита", "Кароліна", "Кирило", "Матвій", "Денис", "Вадим", "Тимур", "Поліна", "Костянтин", "Анастасія", "Борис", "Ростислав", "Максим", "Ксенія", "Ярослав", "Ярослава", "Сергій", "Ольга", "Артем", "Микола", "Софія", "Вячеслав", "Валерій", "Галина", "Ірина", "Надія", "Людмила", "Богдан", "Інна", "Олексій", "Павло", "Катерина", "Лариса", "Віталій", "Христина", "Роман", "Аліна", "Тамара", "Гліб", "Савелій")
+client_name <- sample(cl_names,
+                    size = 10000,
+                    replace = T)
+```
+
+```{r}
+set.seed(1)
+cl_surnames <- c("Мельник", "Шевченко", "Коваленко", "Бондаренко", "Бойко", "Ткаченко", "Кравченко", "Ковальчук", "Коваль", "Олійник", "Шевчук", "Поліщук", "Ткачук", "Савченко", "Бондар", "Марченко", "	Руденко", "Мороз", "Лисенко", "Петренко", "Клименко", "Павленко", "Кравчук", "Кузьменко", "Пономаренко", "Савчук", "Василенко", "Левченко", "Харченко", "Сидоренко", "Карпенко", "Гаврилюк", "Швець", "Мельничук", "Попова", "Романюк", "Панченко", "Юрченко", "Мазур", "Хоменко", "Павлюк", "Кушнір", "Литвиненко", "Мартинюк", "Гончаренко", "Приходько", "Костенко", "Кулик", "Романенко", "Костюк", "Семенюк", "Назаренко", "Ткач", "Кравець", "Коломієць", "Козак", "Яковенко", "Федоренко", "Ковтун", "Білоус", "Нестеренко", "Терещенко", "Колесник", "Зінченко", "Тарасенко", "Міщенко", "Вовк", "Демченко", "Пилипенко", "Кириченко", "Жук", "Гуменюк")
+client_surname <- sample(cl_surnames,
+                    size = 10000,
+                    replace = T)
+```
+
+```{r}
+set.seed(1)
+number_vals <- sample(c(000000000:999999999),
+                                size = 10000,
+                                replace = T)
+phone_number <- paste0("+380", number_vals)
+```
+
+```{r}
+login <- paste0("login", c(1:10000), "@gmail.com")
+```
+
+```{r}
+set.seed(1)
+password <- stringi::stri_rand_strings(10000, 10)
+```
+
+```{r}
+library(RMySQL)
+library(data.table)
+mysql_db_connection <- dbConnect(RMySQL::MySQL(),
+                                 dbname = "pharmacy_innodb",
+                                 host = "localhost",
+                                 port = 3306,
+                                 user = "root",
+                                 password = "sovyshka07")
+query_get_all_addresses <- dbSendQuery(mysql_db_connection,
+                                        "select address from pharmacy")
+client_address <- data.table(fetch(query_get_all_addresses, n = -1))
+dbClearResult(dbListResults(mysql_db_connection)[[1]])
+dbDisconnect(mysql_db_connection)
+client_address
+```
+
+```{r}
+set.seed(1)
+start_date <- as.Date("2015-01-01")
+end_date <- as.Date("2023-09-08")
+
+set.seed(123)
+registration_date <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             10000,
+                             replace = TRUE))
+```
+
+```{r}
+set.seed(1)
+client_int <- sample(c(1:1000),
+                    size = 10000,
+                    replace = T)
+```
+
+```{r}
+set.seed(1)
+client_float <- abs(round(rnorm(10000), 2))
+```
+
+```{r}
+set.seed(12)
+fk_client_role <- sample(client_role_range,
+                     size = 10000,
+                     replace = T)
+```
+
+```{r}
+client <- data.frame(id_client = id_client,
+                     client_name = client_name,
+                     client_surname = client_surname,
+                     phone_number = phone_number,
+                     login = login,
+                     password = password,
+                     client_address = client_address,
+                     registration_date = registration_date,
+                     client_int = client_int,
+                     client_float = client_float,
+                     fk_client_role = fk_client_role)
+head(client)
+```
+
+```{r}
+library(dplyr)
+#client %>% rename(client_address = address)
+names(client)[names(client) == "address"] <- "client_address"
+write.csv(client, 
+          "./zooshop_out/client.csv",
+          row.names = FALSE)
+```
+
+```{r}
+create_client <- function(df){
+        query <- paste0("INSERT INTO `zooshop_innodb`.`client` (`id_client`, `client_name`, `client_surname`, `phone_number`, `login`, `password`, `client_address`, `registration_date`, `client_int`, `client_float`, `fk_client_role`) VALUES ( " ,id_client,", '", client_name,"', '", client_surname,"', '", phone_number,"', '", login, "', '", password, "', '", client_address, "', '", registration_date, "', ", client_int,", ", client_float,", ", fk_client_role ,");")
+        return(query)
+}
+```
+
+```{r}
+# write to sql file
+file_connection <- file("./zooshop_out/fill_client.sql")
+writeLines(create_client(client),
+           file_connection)
+close(file_connection)
+```
