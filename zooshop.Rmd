@@ -47,7 +47,7 @@ end_date <- as.Date("2023-09-08")
 set.seed(123)
 date_added <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
                              10000,
-                             replace = TRUE))
+                             replace = FALSE))
 ```
 
 ```{r}

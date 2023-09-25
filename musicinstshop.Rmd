@@ -1,0 +1,606 @@
+![](images/musicinstshop_innodb_img_1.png)
+
+```{r}
+fk_status_range <- c(1:5)
+fk_role_range <- c(1:2)
+fk_brand_country_range <- c(1:10)
+fk_delivery_type_range <- c(1:6)
+fk_payment_type_range <- c(1:2)
+fk_category_range <- c(1:11)
+fk_type_range <- c(1:54)
+```
+
+## Brand
+
+```{r}
+id_brand <- c(1:15000)
+```
+
+```{r}
+set.seed(1)
+brands_real <- c("Yamaha", "Stainway and Sons", "Casio", "Hohner", "Kawai", "Becker", "Boss", "Fender", "Kurzweil", "Sennheizer", "Shure", "Sigma", "Roland", "Suzuki", "Crafter", "Weston", "Stradivari", "Hammer")
+brands_mock <- paste0("Виробник без назви №", id_brand)
+brands <- c(brands_real, brands_mock)
+brand_name <- sample(brands, 
+                     size = 15000, 
+                     replace = TRUE)
+```
+
+```{r}
+set.seed(1)
+brand_infos <- c("Даний бренд відомий ще с 17 століття завдяки виробництву якісних інструментів", "Японський бренд, який має багато поціновувачів музики у всьому світі", "Продукція даного бренду - поєднання відповідності ціни якості", "Інструменти ручної роботи під індивідуальне замовлення")
+brand_info <- sample(brand_infos,
+                     size = length(id_brand),
+                     replace = T)
+```
+
+```{r}
+set.seed(1)
+start_date <- as.Date("1899-01-01")
+end_date <- as.Date("1981-01-01")
+
+brand_created <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             15000,
+                             replace = TRUE))
+```
+
+```{r}
+set.seed(1)
+fk_brand_country <- sample(fk_brand_country_range,
+                           size = length(id_brand),
+                           replace = T)
+```
+
+```{r}
+set.seed(1)
+float_field <- abs(round(rnorm(15000), 2))
+```
+
+```{r}
+set.seed(1)
+int_field <- sample(c(1:5000),
+                    size = length(id_brand),
+                    replace = T)
+```
+
+```{r}
+brand <- data.frame(id_brand = id_brand,
+                    brand_name = brand_name,
+                    brand_info = brand_info,
+                    brand_created = brand_created,
+                    fk_brand_country = fk_brand_country,
+                    float_field = float_field,
+                    int_field = int_field)
+head(brand)
+write.csv(brand, 
+          "./musicinstrshop_out/brand.csv",
+          row.names = FALSE)
+```
+
+```{r}
+fill_brand <- paste0("INSERT INTO `musicinstrshop_innodb`.`brand` (`id_brand`, `brand_name`, `brand_info`, `brand_created`, `fk_brand_country`, `float_field`, `int_field`) VALUES ( " ,brand$id_brand,", '", brand$brand_name, "', '", brand$brand_info,"', '", brand$brand_created,"', ", brand$fk_brand_country, ", ", brand$float_field, ", ", brand$int_field,");")
+# write to sql file
+file_connection <- file("./musicinstrshop_out/fill_brand.sql")
+writeLines(fill_brand,
+           file_connection)
+close(file_connection)
+```
+
+## Mus_product
+
+```{r}
+id_mus_product <- c(1:15000)
+```
+
+```{r}
+mus_names <- c("DJ контролер Native Instruments Traktor Kontrol", 
+               "Кейс, чехол для UDG Denon DJ", "DJ мікшер Native Instruments Traktor Kontrol", 
+               "DJ мікшер Allen & Heath", 
+               "Сумка-підставка Native Instruments Traktor Kontrol Bag", 
+               "Блок живлення Native Instruments Power Supply (18W)", "Вініловий програвач NUMARK", 
+               "Вініловий програвач Technics", 
+               "Dj-комплект Denon DJ", "Радіосистема AKG WMS40 Mini Vocal Set", 
+               "Вокальна радіосистема SHURE", 
+               "Вокальний динамічний мікрофон AUDIX", 
+               "Вокальний конденсаторний мікрофон AUDIX", 
+               "Конференц мікрофон на гусячої шиї AUDIX", 
+               "Настільний конференц мікрофон SUPERLUX", 
+               "Петличний конденсаторний мікрофон SUPERLUX", 
+               "Мікрофон для випробувань і вимірювань AUDIX", 
+               "Вимірювальний конденсаторний мікрофон SUPERLUX", 
+               "Мікрофон типу пушка для відеокамери SUPERLUX", 
+               "Акустична гітара YAMAHA", 
+               "Акустична гітара CORT", 
+               "Акустична гітара IBANEZ", 
+               "Акустична гітара FENDER", 
+               "Акустична гітара WASHBURN", 
+               "Укулеле YAMAHA", 
+               "Укулеле CORT", 
+               "Укулеле IBANEZ", 
+               "Укулеле FENDER", 
+               "Укулеле WASHBURN", 
+               "Електро-акустична гітара YAMAHA", 
+               "Електро-акустична гітара CORT", 
+               "Електро-акустична гітара IBANEZ", 
+               "Електро-акустична гітара FENDER", 
+               "Електро-акустична гітара WASHBURN", 
+               "Електрогітара YAMAHA", 
+               "Електрогітара CORT", 
+               "Електрогітара IBANEZ", 
+               "Електрогітара FENDER", 
+               "Електрогітара WASHBURN", 
+               "Бас-гітара YAMAHA", 
+               "Бас-гітара CORT", 
+               "Бас-гітара IBANEZ", 
+               "Бас-гітара FENDER", 
+               "Бас-гітара WASHBURN", 
+               "Мандоліна YAMAHA", 
+               "Мандоліна IBANEZ", 
+               "Банджо YAMAHA", 
+               "Банджо IBANEZ", 
+               "MIDI-клавіатура M-AUDIO", 
+               "MIDI-клавіатура YAMAHA", 
+               "MIDI-клавіатура CORT", 
+               "Цифрове піаніно ROLAND", 
+               "Цифрове піаніно YAMAHA", 
+               "Цифрове піаніно KAWAII", 
+               "Синтезатор IBANEZ", 
+               "Синтезатор CASIO", 
+               "Синтезатор ROLAND", 
+               "Синтезатор YAMAHA", 
+               "Цифрове піаніно KAWAII", 
+               "Цифрове піаніно IBANEZ", 
+               "Цифрове піаніно CASIO", 
+               "Піаніно ROLAND", 
+               "Піаніно YAMAHA", 
+               "Піаніно KAWAII", 
+               "Піаніно IBANEZ", 
+               "Піаніно CASIO", 
+               "Акордеон MAXTONE", 
+               "Дисклавер YAMAHA", 
+               "Сценічний орган YAMAHA", 
+               "Набір для студії M-Audio", 
+               "Студійний набір FOCUSRITE", 
+               "Ударна установка YAMAHA", 
+               "Ударна установка YAMAHA Stage Custom Birch", 
+               "Акустична барабанна установка PEARL Roadshow", 
+               "Акустична барабанна установка DW Design", 
+               "Цифровий саксофон YAMAHA", 
+               "Блок-флейта сопрано YAMAHA", 
+               "Блок-флейта бас YAMAHA", 
+               "Блок-флейта альт YAMAHA", 
+               "Блок-флейта тенор YAMAHA", 
+               "Альт саксофон J. MICHAEL", 
+               "Тенор саксофон J. MICHAEL", 
+               "Труба J.MICHAEL", 
+               "Труба YAMAHA", 
+               "Горн YAMAHA альт", 
+               "Корнет MAXTONE", 
+               "Корнет J.MICHAEL", 
+               "Корнет YAMAHA", 
+               "Корнет Roy Benson", 
+               "Піаніка YAMAHA", 
+               "Піаніка SEYDEL", 
+               "Альт скрипковий YAMAHA", 
+               "Альт зі звукознімачем YAMAHA", 
+               "Віолончель STENTOR", 
+               "Віолончель YAMAHA", 
+               "Електро-віолончель YAMAHA", 
+               "Контрабас STENTOR", 
+               "Контрабас MAXTONE", 
+               "Електронний контрабас IBANEZ", 
+               "Скрипка MAXTONE", 
+               "Електроскрипка MAXTONE", 
+               "Скрипка STENTOR", 
+               "Струни для скрипки D ADDARIO PRELUDE VIOLIN STRING SET", "Струни для скрипки D ADDARIO ZYEX VIOLIN STRING SET", 
+               "1 струна (E, Мі) для скрипки D ADDARIO ASCENTÉ VIOLIN SINGLE E STRING", 
+               "Струни для скрипки D ADDARIO KAPLAN AMO VIOLIN STRING SET", "Кейс для скрипки STENTOR", 
+               "Кейс для скрипки MAXTONE", 
+               "Тарілка хай-хет SABIAN 14", 
+               "Тарілка Сплеш SABIAN 10", 
+               "Інструментальний кабель D ADDARIO", 
+               "Набір D ADDARIO DIY Solderless Pedalboard Cable", "Мікрофонний кабель D ADDARIO", 
+               "Акустичний кабель D ADDARIO", 
+               "Акустичний кабель ROCKCABLE", 
+               "Акустичний кабель RAPCO HORIZON", 
+               "Акустичний кабель SOUNDKING")
+product_name <- sample(mus_names,
+                       size = 15000,
+                       replace = T)
+```
+
+```{r}
+mus_models <- c("S2 MK3", "F1", "S4 MK3", "X1 MK2", "SC Live 4 Hardcase BL", "Controller Case Prime 4", "Z1", "Z2", "Prime X1850", "XONE 92", "Без моделі", "PT01 Touring", "PT01 Scratch", "SL-1210 MK7", "SC6000 Prime Bundle Set", "BD US45B", "US45A", "US45C", "US25C", "BLX24E/SM58", "BLX24E/PG58", "BLX288E/PG58", "D5", "A5", "A12", "EW-210", "UHF M850 DSP Duo", "BLX24E/B58 H8E", "OM2", "OM5", "OM2S", "OM3", "OM3S", "OM6", "OM7", "OM11", "VX10", "F50", "F50S", "ADX18", "USB12", "PRA428", "WO518TQG", "TM-1", "ECM999", "PRA118S", "PRA118L", "FG850", "FG820", "F370", "AF510M", "AD810LH", "VC5S34", "VC5S44", "CVC101", "PW-AMSGRA-10", "PW-AMSG-10", "PW-AMSGRR-10", "PW-GPKIT-10", "PW-AMSM-25", "PW-SO-25", "RCL30410 D7", "14GA.K", "BD111")
+product_model <- sample(mus_models,
+                       size = 15000,
+                       replace = T)
+```
+
+```{r}
+set.seed(1)
+product_price <- abs(round(rnorm(15000, 25543, 5234), 2))
+```
+
+```{r}
+mus_info <- c("Даний продукт доступний у наявності.", "Даний продукт доступний у лімітованій кількості під замовлення.", "Даний продукт знятий із виробництва і більше поставлятись не буде.", "Даний продукт доступний під замовлення, час очікування 7-10 робочих днів.", "Наступна поставка очікується наприкінці вересня.", "Наступна поставка очікується наприкінці 2023 року.", "Поставок даного товару найближчим часом не очікується", "Даний продукт доступний під замовлення, час очікування 20-30 робочих днів.")
+product_info <- sample(mus_info, 
+                       size = 15000,
+                       replace = T)
+```
+
+```{r}
+product_in_stock <- sample(c(1:10), 
+                           size = 15000,
+                           replace = T)
+```
+
+```{r}
+set.seed(1)
+start_date <- as.Date("2019-01-01")
+end_date <- as.Date("2023-09-13")
+
+added_date <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             15000,
+                             replace = TRUE))
+```
+
+```{r}
+fk_type <- sample(fk_type_range,
+                  15000,
+                  replace = T)
+```
+
+```{r}
+fk_category_ <- sample(c(1:11),
+                  15000,
+                  replace = T)
+```
+
+```{r}
+fk_brand <- sample(id_brand, 
+                   15000,
+                   replace = T)
+```
+
+```{r}
+mus_product <- data.frame(id_mus_product = id_mus_product,
+                          product_name = product_name,
+                          product_model = product_model,
+                          product_price = product_price,
+                          product_info = product_info,
+                          product_in_stock = product_in_stock,
+                          added_date = added_date,
+                          fk_type = fk_type,
+                          fk_category = fk_category_,
+                          fk_brand = fk_brand)
+head(mus_product)
+write.csv(mus_product, 
+          "./musicinstrshop_out/mus_product.csv",
+          row.names = FALSE)
+```
+
+```{r}
+fill_mus_product <- paste0("INSERT INTO `musicinstrshop_innodb`.`mus_product` (`id_mus_product`, `product_name`, `product_model`, `product_price`, `product_info`, `product_in_stock`, `added_date`, `fk_type`, `fk_category`, `fk_brand`) VALUES (" ,mus_product$id_mus_product,", '", mus_product$product_name, "', '", mus_product$product_model,"', ", mus_product$product_price,", '", mus_product$product_info, "' , ", mus_product$product_in_stock, ", '", mus_product$added_date, "', ", mus_product$fk_type, ", ", mus_product$fk_category, ", ", mus_product$fk_brand, ");")
+# write to sql file
+file_connection <- file("./musicinstrshop_out/fill_mus_product.sql")
+writeLines(fill_mus_product,
+           file_connection)
+close(file_connection)
+```
+
+## Delivery_info
+
+```{r}
+id_delivery_info <- c(1:15000)
+```
+
+```{r}
+fk_delivery_type <- sample(fk_delivery_type_range,
+                           15000,
+                           replace = T)
+```
+
+```{r}
+set.seed(1)
+start_date <- as.Date("2019-01-01")
+end_date <- as.Date("2023-09-20")
+
+expected_date <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             15000,
+                             replace = TRUE))
+```
+
+```{r}
+client_df <- read.csv("./musicinstrshop_out/client.csv")
+```
+
+```{r}
+delivery_address <- client_df$client_address
+delivery_address <- sample(delivery_address,
+                           15000,
+                           replace = T)
+```
+
+```{r}
+del_infos <- c("Доставка великогабаритного вантажу сплачується окремо.", "Посилку застраховано на 100000 грн.", "Доставка крихкогго вантажу.", "Доставка затримується через габаритність вантажу.", "Деталі отримання габаритного вантажу отримуйте в перевізника.")
+delivery_info_ <- sample(del_infos,
+                        15000,
+                        replace = T)
+```
+
+```{r}
+priority <- sample(c(1:5),
+                   15000, 
+                   replace = T)
+```
+
+```{r}
+set.seed(2)
+float_field <- abs(round(rnorm(15000), 2))
+```
+
+```{r}
+delivery_info <- data.frame(id_delivery_info = id_delivery_info,
+                            fk_delivery_type = fk_delivery_type,
+                            expected_date = expected_date,
+                            delivery_address = delivery_address,
+                            delivery_info = delivery_info_,
+                            priority = priority,
+                            float_field = float_field) 
+head(delivery_info)
+delivery_info$delivery_address <- gsub("'", "", delivery_info$delivery_address)
+write.csv(delivery_info, 
+          "./musicinstrshop_out/delivery_info.csv",
+          row.names = FALSE)
+```
+
+```{r}
+fill_delivery_info <- paste0("INSERT INTO `musicinstrshop_innodb`.`delivery_info` (`id_delivery_info`, `fk_delivery_type`, `expected_date`, `delivery_address`, `delivery_info`, `priority`, `float_field`) VALUES ( " , delivery_info$id_delivery_info,", ", delivery_info$fk_delivery_type, ", '", delivery_info$expected_date,"', '", delivery_info$delivery_address,"', '", delivery_info$delivery_info, "', ", delivery_info$priority, ", ", delivery_info$float_field,");")
+# write to sql file
+file_connection <- file("./musicinstrshop_out/fill_delivery_info.sql")
+writeLines(fill_delivery_info,
+           file_connection)
+close(file_connection)
+```
+
+## User
+
+```{r}
+id_user <- c(1:8000)
+```
+
+```{r}
+firstname <- client_df$client_name
+firstname <- sample(firstname,
+                    8000,
+                    replace = T)
+```
+
+```{r}
+lastname <- client_df$client_surname
+lastname <- sample(lastname,
+                    8000,
+                    replace = T)
+```
+
+```{r}
+set.seed(1)
+start_date <- as.Date("1910-01-01")
+end_date <- as.Date("2023-09-15")
+
+birthday <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             8000,
+                             replace = TRUE))
+
+```
+
+```{r}
+about <- c("Учасник музичної групи.", "Музикант-любитель.", "Власник магазину музичної апаратури.", "Організатор музичних заходів.")
+about_user <- sample(about, 8000, replace = T)
+```
+
+```{r}
+set.seed(1)
+number_vals <- sample(c(000000000:999999999),
+                                size = 8000,
+                                replace = T)
+phone <- paste0("+380", number_vals)
+```
+
+```{r}
+email <- paste0("user",id_user, "email", c(1:8000), "@gmail.com")
+```
+
+```{r}
+set.seed(1)
+password <- stringi::stri_rand_strings(8000, 12)
+```
+
+```{r}
+head(mus_product)
+write.csv(mus_product, 
+          "./musicinstrshop_out/mus_product.csv",
+          row.names = FALSE)
+```
+
+```{r}
+int_field <- sample(c(1:400), 8000, replace = T)
+```
+
+```{r}
+float_field <- abs(round(rnorm(8000), 2))
+```
+
+```{r}
+fk_role <- sample(fk_role_range,
+                  8000,
+                  replace = T)
+```
+
+```{r}
+user <- data.frame(id_user = id_user,
+                   firstname = firstname,
+                   lastname = lastname,
+                   birthday = birthday,
+                   about_user = about_user,
+                   phone = phone,
+                   email = email,
+                   password = password,
+                   int_field = int_field,
+                   float_field = float_field,
+                   fk_role = fk_role)
+head(user)
+write.csv(user, 
+          "./musicinstrshop_out/user.csv",
+          row.names = FALSE)
+```
+
+```{r}
+fill_user <- paste0("INSERT INTO `musicinstrshop_innodb`.`user` (`id_user`, `firstname`, `lastname`, `birthday`, `about_user`, `phone`, `email`, `password`, `int_field`, `float_field`, `fk_role`) VALUES (" ,user$id_user,", '", user$firstname, "', '", user$lastname,"', '", user$birthday,"', '", user$about_user, "', '", user$phone, "', '", user$email, "', '", user$password, "', ", user$int_field, ", ", user$float_field, ", ", user$fk_role, ");")
+# write to sql file
+file_connection <- file("./musicinstrshop_out/fill_user.sql")
+writeLines(fill_user,
+           file_connection)
+close(file_connection)
+```
+
+## Order_info
+
+```{r}
+id_order_info <- c(1:15000)
+```
+
+```{r}
+order_infos_ <- c("Доставка великогабаритного вантажу сплачується окремо.", "Посилку застраховано на 100000 грн.", "Доставка крихкогго вантажу.", "Доставка затримується через габаритність вантажу.", "Деталі отримання габаритного вантажу отримуйте в перевізника.", "Дані про замовлення відсутні")
+order_info_ <- sample(order_infos_, 
+                      15000,
+                      replace = T)
+```
+
+```{r}
+notes <- c("Доставити якомога швидше.", "Прохання ретельно запакувати.", "Прохання додати подарункове пакування.", "Передзвоніть мені, будь-ласка, для уточнення умов доставки.", "Особливих побажань немає")
+order_user_notes <- sample(notes, 15000, replace = T)
+```
+
+```{r}
+set.seed(1)
+start_date <- as.Date("2019-01-01")
+end_date <- as.Date("2023-09-15")
+
+date_ordered <- as.Date(sample(as.numeric(start_date):as.numeric(end_date), 
+                             15000,
+                             replace = TRUE))
+```
+
+```{r}
+set.seed(1)
+fk_delivery_info <- sample(id_delivery_info,
+                           size = 15000,
+                           replace = FALSE)
+```
+
+```{r}
+set.seed(1)
+fk_user <- sample(id_user,
+                  size = 15000,
+                  replace = TRUE)
+```
+
+```{r}
+set.seed(1)
+fk_status <- sample(fk_status_range,
+                    size = 15000,
+                    replace = T)
+```
+
+```{r}
+set.seed(1)
+fk_payment_type <- sample(fk_payment_type_range,
+                    size = 15000,
+                    replace = T)
+```
+
+```{r}
+int_field <- sample(c(1:6000),
+                    15000,
+                    replace = T)
+```
+
+```{r}
+float_field <- abs(round(rnorm(15000), 2))
+```
+
+```{r}
+order_info <- data.frame(id_order_info = id_order_info,
+                         order_info = order_info_,
+                         order_user_notes = order_user_notes,
+                         date_ordered = date_ordered,
+                         fk_delivery_info = fk_delivery_info,
+                         fk_user = fk_user,
+                         fk_status = fk_status,
+                         fk_payment_type = fk_payment_type,
+                         int_field = int_field,
+                         float_field = float_field)
+head(order_info)
+write.csv(order_info, 
+          "./musicinstrshop_out/order_info.csv",
+          row.names = FALSE)
+```
+
+```{r}
+fill_order_info <- paste0("INSERT INTO `musicinstrshop_innodb`.`order_info` (`id_order_info`, `order_info`, `order_user_notes`, `date_ordered`, `fk_delivery_info`, `fk_user`, `fk_status`, `fk_payment_type`, `int_field`, `float_field`) VALUES ( " ,order_info$id_order_info,", '", order_info$order_info, "', '", order_info$order_user_notes,"', '", order_info$date_ordered,"', ", order_info$fk_delivery_info, ", ", order_info$fk_user, ", ", order_info$fk_status, ", ", order_info$fk_payment_type, ", ", order_info$int_field, ", ", order_info$float_field, ");")
+# write to sql file
+file_connection <- file("./musicinstrshop_out/fill_order_info.sql")
+writeLines(fill_order_info,
+           file_connection)
+close(file_connection)
+```
+
+## Cart
+
+```{r}
+set.seed(1)
+id_mus_product <- sample(id_mus_product,
+                         size = 15000,
+                         replace = T)
+```
+
+```{r}
+set.seed(1)
+id_order_info <- c(1:15000)
+```
+
+```{r}
+cart <- data.frame(id_mus_product = id_mus_product,
+                   id_order_info = id_order_info)
+library(dplyr)
+cart <- unique(cart)
+nrow(cart)
+```
+
+```{r}
+set.seed(1)
+number_ordered <- sample(c(1:10),
+                         size = nrow(cart),
+                         replace = T)
+```
+
+```{r}
+cart$number_ordered <- number_ordered
+head(cart)
+```
+
+```{r}
+write.csv(cart, 
+          "./musicinstrshop_out/cart.csv",
+          row.names = FALSE)
+```
+
+```{r}
+fill_cart <- paste0("INSERT INTO `musicinstrshop_innodb`.`cart` (`id_mus_product`, `id_order_info`, `number_ordered`) VALUES (" ,cart$id_mus_product,", ", cart$id_order_info, ", ", cart$number_ordered,");")
+# write to sql file
+file_connection <- file("./musicinstrshop_out/fill_cart.sql")
+writeLines(fill_cart,
+           file_connection)
+close(file_connection)
+```
